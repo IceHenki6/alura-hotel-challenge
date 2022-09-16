@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+
+import com.federico.alurahotel.model.Reserva;
 
 public class ReservasDao {
 	private Connection con;
@@ -11,7 +14,24 @@ public class ReservasDao {
 		this.con = con;
 	}
 	
-	
+	public void registerReservation(Reserva reserva) {
+		try {
+			final PreparedStatement statement = con.prepareStatement("INSERT INTO reservas " 
+					+ "(fecha_entrada, fecha_salida, valor, forma_de_pago)"
+					+ " VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			
+			try(statement){
+				statement.setDate(1,reserva.getFechaEntrada());
+				statement.setDate(2, reserva.getFechaSalida());
+				statement.setDouble(3, reserva.getReservationValue());
+				statement.setString(4, reserva.getFormaDePago());
+				
+				statement.execute();
+			}
+		}catch(SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	public Integer obtainReservationId() {
 		Integer reservationId = null;

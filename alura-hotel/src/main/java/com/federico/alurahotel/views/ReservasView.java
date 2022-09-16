@@ -152,16 +152,13 @@ public class ReservasView extends JFrame {
 			public void propertyChange(PropertyChangeEvent evt) {
 //Activa el evento, después del usuario seleccionar las fechas se debe calcular el valor de la reserva
 				
-//				System.out.println(evt.getNewValue());
-//				System.out.println("Fecha de entrada: " + ReservasView.txtFechaE.getDate());
-//				System.out.println("Fecha de salida: " + ReservasView.txtFechaS.getDate());
+
 				if (ReservasView.txtFechaE.getDate() != null && ReservasView.txtFechaS.getDate() != null) {
 					Period difference = Period.between
 							(ReservasView.txtFechaE.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), 
 									ReservasView.txtFechaS.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
 					
 					
-//					DecimalFormat df = new DecimalFormat("##0.00");
 					double result = ReservasController.obtainReservationValue(difference.getDays());
 					if(result >= 0) {
 						LocalDate fechaEntrada = ReservasView.txtFechaE.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -332,6 +329,8 @@ public class ReservasView extends JFrame {
 					ReservasController reservasController = new ReservasController();
 					int reservaId = reservasController.obtainId();
 					reserva.setReservationId(reservaId);
+					reserva.setFormaDePago((String) ReservasView.txtFormaPago.getSelectedItem());
+
 					RegistroHuesped registro = new RegistroHuesped(reserva);
 					
 					registro.setVisible(true);

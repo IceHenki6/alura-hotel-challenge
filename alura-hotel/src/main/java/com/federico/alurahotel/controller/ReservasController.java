@@ -2,6 +2,7 @@ package com.federico.alurahotel.controller;
 
 import com.federico.alurahotel.dao.ReservasDao;
 import com.federico.alurahotel.factory.ConnectionFactory;
+import com.federico.alurahotel.model.Reserva;
 import com.federico.alurahotel.utils.Money;
 
 public class ReservasController {
@@ -10,6 +11,10 @@ public class ReservasController {
 	public ReservasController() {
 		var factory = new ConnectionFactory();
 		this.reservasDao = new ReservasDao(factory.createConnection());
+	}
+	
+	public void registerReservation(Reserva reserva) {
+		reservasDao.registerReservation(reserva);
 	}
 	
 	public Integer obtainId() {

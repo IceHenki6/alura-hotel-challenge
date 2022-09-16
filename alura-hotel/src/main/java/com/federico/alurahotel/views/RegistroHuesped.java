@@ -7,6 +7,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import java.awt.Color;
 
+import com.federico.alurahotel.controller.RegistroHuespedController;
+import com.federico.alurahotel.controller.ReservasController;
+import com.federico.alurahotel.model.Huesped;
 import com.federico.alurahotel.model.Reserva;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.JComboBox;
@@ -21,7 +24,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.sql.Date;
 import java.text.Format;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.awt.event.ActionEvent;
 import java.awt.Toolkit;
 import javax.swing.SwingConstants;
@@ -30,6 +36,7 @@ import javax.swing.JSeparator;
 @SuppressWarnings("serial")
 public class RegistroHuesped extends JFrame {
 	private Reserva reserva;
+	private ReservasController reservasController;
 	
 	private JPanel contentPane;
 	private JTextField txtNombre;
@@ -64,6 +71,8 @@ public class RegistroHuesped extends JFrame {
 	public RegistroHuesped(Reserva reserva) {
 		
 		this.reserva = reserva;
+		this.reservasController = new ReservasController();
+		
 		setIconImage(Toolkit.getDefaultToolkit().getImage(RegistroHuesped.class.getResource("/com/federico/imagenes/lOGO-50PX.png")));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 910, 634);
@@ -216,6 +225,10 @@ public class RegistroHuesped extends JFrame {
 		txtNreserva.setBorder(javax.swing.BorderFactory.createEmptyBorder());
 		contentPane.add(txtNreserva);
 		
+		//agrega automáticamente el número de reserva para el cliente
+		this.txtNreserva.setText(String.valueOf(reserva.getReservationId()));
+		
+		
 		JSeparator separator_1_2 = new JSeparator();
 		separator_1_2.setBounds(560, 170, 289, 2);
 		separator_1_2.setForeground(new Color(12, 138, 199));
@@ -257,7 +270,39 @@ public class RegistroHuesped extends JFrame {
 		btnguardar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				System.out.println("Aguante boca");
+				//here
+				if(txtNombre.getText()!= null && txtApellido.getText() != null 
+						&& txtNacionalidad.getSelectedItem()!=null && txtFechaN.getDate() != null) {
+					
+					
+					LocalDate birthDate = txtFechaN.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+					String nombre = txtNombre.getText();
+					String apellido = txtApellido.getText();
+					String nacionalidad = String.valueOf(txtNacionalidad.getSelectedItem());
+					String telefono = txtTelefono.getText();
+					int idReserva = reserva.getReservationId();
+					
+					Huesped huesped = new Huesped(nombre,apellido,birthDate,nacionalidad,telefono,idReserva);
+					
+					
+					
+					try {
+						reservasController.registerReservation(reserva);
+				
+						RegistroHuespedController registroHuespedController = new RegistroHuespedController();
+						registroHuespedController.registrarHuesped(huesped);
+						
+						Exito exito = new Exito();
+						exito.setVisible(true);
+						dispose();
+					}catch(Exception ex) {
+						ex.printStackTrace();
+					}
+					
+				}else {
+					JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
+				}
+				
 			}
 		});
 		btnguardar.setLayout(null);
