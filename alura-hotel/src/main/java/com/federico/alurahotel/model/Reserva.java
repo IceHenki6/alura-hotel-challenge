@@ -10,10 +10,21 @@ public class Reserva {
 	private int reservationId;
 	private String formaDePago;
 	
-
+	
+	public Reserva() {
+		
+	}
+	
+	//fix this later
 	public Reserva(LocalDate fechaEntrada, LocalDate fechaSalida, Double reservationValue) {
 		this.fechaEntrada = Date.valueOf(fechaEntrada);
 		this.fechaSalida = Date.valueOf(fechaSalida);
+		this.reservationValue = reservationValue;
+	}
+	
+	public Reserva(Date fechaEntrada, Date fechaSalida, Double reservationValue) {
+		this.fechaEntrada = fechaEntrada;
+		this.fechaSalida = fechaSalida;
 		this.reservationValue = reservationValue;
 	}
 	

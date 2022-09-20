@@ -5,6 +5,11 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
+import com.federico.alurahotel.controller.BusquedaController;
+import com.federico.alurahotel.model.Huesped;
+import com.federico.alurahotel.model.Reserva;
+
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JButton;
@@ -15,6 +20,8 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 import java.awt.Toolkit;
@@ -116,6 +123,9 @@ public class Busqueda extends JFrame {
 		modeloH.addColumn("Telefono");
 		modeloH.addColumn("Numero de Reserva");
 		
+		
+
+		
 		JLabel lblNewLabel_2 = new JLabel("");
 		lblNewLabel_2.setIcon(new ImageIcon(Busqueda.class.getResource("/com/federico/imagenes/Ha-100px.png")));
 		lblNewLabel_2.setBounds(56, 51, 104, 107);
@@ -207,11 +217,29 @@ public class Busqueda extends JFrame {
 		separator_1_2.setBounds(539, 159, 193, 2);
 		contentPane.add(separator_1_2);
 		
+
+		
 		JPanel btnbuscar = new JPanel();
 		btnbuscar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				clearTable();
+				Pattern pattern = Pattern.compile("^[0-9]*$");
+				Matcher matcher = pattern.matcher(txtBuscar.getText());
+				boolean matchFound = matcher.find();
+				if(matchFound) {
+					BusquedaController busquedaController = new BusquedaController(); 
+					Reserva reserva = busquedaController.searchByIdReservation(txtBuscar.getText());
+					Huesped huesped = busquedaController.searchByHuespedResId(reserva.getReservationId());
+					listReservas(reserva);
+					listUniqueHuesped(huesped);
 
+				}else {
+					System.out.println("Not a number :D");
+					BusquedaController busquedaController = new BusquedaController();
+					List<Huesped> huespedes = busquedaController.searchByLastName(txtBuscar.getText());
+					listHuespedes(huespedes);
+				}
 			}
 		});
 		btnbuscar.setLayout(null);
@@ -257,6 +285,54 @@ public class Busqueda extends JFrame {
 		setResizable(false);
 	}
 	
+	
+
+	private void clearTable() {
+		modelo.getDataVector().clear();
+		modeloH.getDataVector().clear();
+	}
+	
+	private void listHuespedes(List<Huesped> huespedes) {
+		modeloH.addRow(new Object[] {"Id", "Nombre", "Apellido", 
+				"Fecha de nacimiento", "Nacionalidad", "Telefono","Id reserva"});
+		huespedes.forEach(huesped -> modeloH.addRow(
+				new Object[] {
+						huesped.getId(),
+						huesped.getNombre(),
+						huesped.getApellido(),
+						huesped.getFechaNacimiento(),
+						huesped.getNacionalidad(),
+						huesped.getTelefono(),
+						huesped.getIdReservas()
+				}
+				
+			));
+	}
+	
+	private void listUniqueHuesped(Huesped huesped) {
+		modeloH.addRow(new Object[] {"Id", "Nombre", "Apellido", 
+				"Fecha de nacimiento", "Nacionalidad", "Telefono","Id reserva"});
+		if(huesped.getId() != 0) {
+			modeloH.addRow(new Object[] { huesped.getId(), huesped.getNombre(), huesped.getApellido(),
+					huesped.getFechaNacimiento(), huesped.getNacionalidad(), huesped.getTelefono(),
+					huesped.getIdReservas() });
+		}
+	}
+	
+	private void listReservas(Reserva reserva) {
+		modelo.addRow(new Object[] {"Id","Fecha de entrada", "Fecha de salida", "Valor", "Forma de pago"});
+		if(reserva.getReservationId()!= 0) {
+			modelo.addRow(
+					new Object[] {
+							reserva.getReservationId(),
+							reserva.getFechaEntrada(),
+							reserva.getFechaSalida(),
+							reserva.getReservationValue(),
+							reserva.getFormaDePago()
+					}
+				);
+		}
+	}
 //Código que permite mover la ventana por la pantalla según la posición de "x" y "y"
 	 private void headerMousePressed(java.awt.event.MouseEvent evt) {
 	        xMouse = evt.getX();

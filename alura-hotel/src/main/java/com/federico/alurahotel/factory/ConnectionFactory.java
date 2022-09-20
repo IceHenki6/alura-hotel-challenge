@@ -15,7 +15,7 @@ public class ConnectionFactory {
 		ComboPooledDataSource comboPooledDataSource = new ComboPooledDataSource();
 		comboPooledDataSource.setJdbcUrl("jdbc:postgresql://localhost/alura_hotel?useTimeZone=true&serverTimeZone=UTC");
 		comboPooledDataSource.setUser("postgres");
-		comboPooledDataSource.setPassword("r27yk84m95/7");
+
 		
 		comboPooledDataSource.setMaxPoolSize(10);
 		
