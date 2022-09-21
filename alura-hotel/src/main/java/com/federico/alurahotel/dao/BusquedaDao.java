@@ -110,4 +110,56 @@ public class BusquedaDao {
 		}
 		return huesped;
 	}
+	
+	
+	public void editReservation(Reserva reserva) {
+		
+		try {
+			String sql = "UPDATE reservas SET " 
+					+ "fecha_entrada = ?, "
+					+ "fecha_salida = ?, "
+					+ "valor = ?, "
+					+ "forma_de_pago = ? "
+					+ "WHERE ID = ?";
+			final PreparedStatement statement = con.prepareStatement(sql);
+			try(statement){
+				statement.setDate(1, reserva.getFechaEntrada());
+				statement.setDate(2, reserva.getFechaSalida());
+				statement.setDouble(3, reserva.getReservationValue());
+				statement.setString(4, reserva.getFormaDePago());
+				statement.setInt(5, reserva.getReservationId());
+				
+				statement.execute();
+			}
+			
+		}catch(SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
+	public void editGuest(Huesped guest) {
+		try {
+			String sql = "UPDATE huespedes SET "
+					+ "nombre = ?, "
+					+ "apellido = ?, "
+					+ "fecha_de_nacimiento = ?, "
+					+ "nacionalidad = ?, "
+					+ "telefono = ? "
+					+ "WHERE id = ?";
+			final PreparedStatement statement = con.prepareStatement(sql);
+			try(statement){
+				statement.setString(1, guest.getNombre());
+				statement.setString(2, guest.getApellido());
+				statement.setDate(3, guest.getFechaNacimiento());
+				statement.setString(4, guest.getNacionalidad());			
+				statement.setString(5, guest.getTelefono());
+				statement.setInt(6, guest.getId());
+				
+				statement.execute();
+			}
+		}catch(SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

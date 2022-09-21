@@ -29,4 +29,12 @@ public class BusquedaController {
 	public Huesped searchByHuespedResId(int id) {
 		return busquedaDao.searchHuespedByResId(id);
 	}
+	
+	public void EditReservations(Reserva reserva) {
+		busquedaDao.editReservation(reserva);
+	}
+	
+	public void EditGuest(Huesped huesped) {
+		busquedaDao.editGuest(huesped);
+	}
 }

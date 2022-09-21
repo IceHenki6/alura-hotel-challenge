@@ -15,7 +15,7 @@ public class Reserva {
 		
 	}
 	
-	//fix this later
+
 	public Reserva(LocalDate fechaEntrada, LocalDate fechaSalida, Double reservationValue) {
 		this.fechaEntrada = Date.valueOf(fechaEntrada);
 		this.fechaSalida = Date.valueOf(fechaSalida);

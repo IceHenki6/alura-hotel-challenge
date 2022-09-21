@@ -7,6 +7,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import com.federico.alurahotel.controller.BusquedaController;
+import com.federico.alurahotel.controller.ReservasController;
 import com.federico.alurahotel.model.Huesped;
 import com.federico.alurahotel.model.Reserva;
 
@@ -17,9 +18,13 @@ import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.SystemColor;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.awt.event.ActionEvent;
@@ -31,6 +36,8 @@ import javax.swing.ListSelectionModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.time.LocalDate;
+import java.time.Period;
 
 @SuppressWarnings("serial")
 public class Busqueda extends JFrame {
@@ -227,18 +234,11 @@ public class Busqueda extends JFrame {
 				Pattern pattern = Pattern.compile("^[0-9]*$");
 				Matcher matcher = pattern.matcher(txtBuscar.getText());
 				boolean matchFound = matcher.find();
+				
 				if(matchFound) {
-					BusquedaController busquedaController = new BusquedaController(); 
-					Reserva reserva = busquedaController.searchByIdReservation(txtBuscar.getText());
-					Huesped huesped = busquedaController.searchByHuespedResId(reserva.getReservationId());
-					listReservas(reserva);
-					listUniqueHuesped(huesped);
-
+					listReservas();
 				}else {
-					System.out.println("Not a number :D");
-					BusquedaController busquedaController = new BusquedaController();
-					List<Huesped> huespedes = busquedaController.searchByLastName(txtBuscar.getText());
-					listHuespedes(huespedes);
+					listHuespedes();
 				}
 			}
 		});
@@ -261,6 +261,18 @@ public class Busqueda extends JFrame {
 		btnEditar.setBounds(635, 508, 122, 35);
 		btnEditar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 		contentPane.add(btnEditar);
+		
+		btnEditar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(hasReservaElegida()) {
+					editReserva();
+				}else {
+					editHuesped();
+				}
+				
+			}
+		});
 		
 		JLabel lblEditar = new JLabel("EDITAR");
 		lblEditar.setHorizontalAlignment(SwingConstants.CENTER);
@@ -292,9 +304,10 @@ public class Busqueda extends JFrame {
 		modeloH.getDataVector().clear();
 	}
 	
-	private void listHuespedes(List<Huesped> huespedes) {
-		modeloH.addRow(new Object[] {"Id", "Nombre", "Apellido", 
-				"Fecha de nacimiento", "Nacionalidad", "Telefono","Id reserva"});
+	private void listHuespedes() {
+		BusquedaController busquedaController = new BusquedaController();
+		List<Huesped> huespedes = busquedaController.searchByLastName(txtBuscar.getText());
+		
 		huespedes.forEach(huesped -> modeloH.addRow(
 				new Object[] {
 						huesped.getId(),
@@ -310,8 +323,6 @@ public class Busqueda extends JFrame {
 	}
 	
 	private void listUniqueHuesped(Huesped huesped) {
-		modeloH.addRow(new Object[] {"Id", "Nombre", "Apellido", 
-				"Fecha de nacimiento", "Nacionalidad", "Telefono","Id reserva"});
 		if(huesped.getId() != 0) {
 			modeloH.addRow(new Object[] { huesped.getId(), huesped.getNombre(), huesped.getApellido(),
 					huesped.getFechaNacimiento(), huesped.getNacionalidad(), huesped.getTelefono(),
@@ -319,8 +330,10 @@ public class Busqueda extends JFrame {
 		}
 	}
 	
-	private void listReservas(Reserva reserva) {
-		modelo.addRow(new Object[] {"Id","Fecha de entrada", "Fecha de salida", "Valor", "Forma de pago"});
+	private void listReservas() {
+		BusquedaController busquedaController = new BusquedaController(); 
+		Reserva reserva = busquedaController.searchByIdReservation(txtBuscar.getText());
+		Huesped huesped = busquedaController.searchByHuespedResId(reserva.getReservationId());
 		if(reserva.getReservationId()!= 0) {
 			modelo.addRow(
 					new Object[] {
@@ -332,7 +345,78 @@ public class Busqueda extends JFrame {
 					}
 				);
 		}
+		listUniqueHuesped(huesped);
 	}
+	
+	
+	private boolean hasReservaElegida() {
+		return tbReservas.getSelectedRowCount() != 0 || tbReservas.getSelectedColumnCount() != 0;
+	}
+	
+	private boolean hasHuespedElegido() {
+		return tbHuespedes.getSelectedRowCount() != 0 || tbHuespedes.getSelectedColumnCount() != 0;
+	}
+	
+	private void editReserva() {
+		if(!hasReservaElegida()) {
+            JOptionPane.showMessageDialog(this, "Elija una reserva para editar");
+            return;
+		}
+		
+		Optional.ofNullable(modelo.getValueAt(tbReservas.getSelectedRow(), tbReservas.getSelectedColumn()))
+			.ifPresentOrElse(fila -> {
+				int id = Integer.valueOf(modelo.getValueAt(tbReservas.getSelectedRow(), 0).toString());
+				LocalDate fechaEntrada = LocalDate
+						.parse(modelo.getValueAt(tbReservas.getSelectedRow(), 1).toString());
+				LocalDate fechaSalida = LocalDate
+						.parse(modelo.getValueAt(tbReservas.getSelectedRow(), 2).toString());
+				String formaDePago = modelo.getValueAt(tbReservas.getSelectedRow(), 4).toString();
+				//TODO fix this horrendous code
+				
+				
+				Period diff = Period.between(fechaEntrada, fechaSalida);
+				Double valorReserva = ReservasController.obtainReservationValue(diff.getDays());
+				Reserva reserva = new Reserva(fechaEntrada, fechaSalida, valorReserva);
+				reserva.setReservationId(id);
+				reserva.setFormaDePago(formaDePago);
+				
+				BusquedaController busquedaController = new BusquedaController();
+				busquedaController.EditReservations(reserva);
+				
+				JOptionPane.showMessageDialog(this, "Reserva modificada exitosamente");
+
+			},() -> JOptionPane.showMessageDialog(this, "Elija una reserva para editar"));
+	}
+	
+	
+	private void editHuesped() {
+		if(!hasHuespedElegido()) {
+			JOptionPane.showMessageDialog(this, "Elija un huesped para editar");
+			return;
+		}
+		
+		Optional.ofNullable(modeloH.getValueAt(tbHuespedes.getSelectedRow(), tbHuespedes.getSelectedColumn()))
+		.ifPresentOrElse(fila -> {
+			int id = Integer.valueOf(modeloH.getValueAt(tbHuespedes.getSelectedRow(), 0).toString());
+			String nombre = modeloH.getValueAt(tbHuespedes.getSelectedRow(), 1).toString();
+			String apellido = modeloH.getValueAt(tbHuespedes.getSelectedRow(), 2).toString();
+			LocalDate fechaNacimiento = LocalDate.parse
+					(modeloH.getValueAt(tbHuespedes.getSelectedRow(), 3).toString());
+			String nacionalidad = modeloH.getValueAt(tbHuespedes.getSelectedRow(), 4).toString();
+			String telefono = modeloH.getValueAt(tbHuespedes.getSelectedRow(), 5).toString();
+			int idReserva = Integer.valueOf(modeloH.getValueAt(tbHuespedes.getSelectedRow(), 6).toString());
+			
+			Huesped huesped = new Huesped(nombre, apellido, fechaNacimiento, nacionalidad, telefono, idReserva);
+			huesped.setId(id);
+			BusquedaController busquedaController = new BusquedaController();
+			
+			busquedaController.EditGuest(huesped);
+			
+			JOptionPane.showMessageDialog(this, "Huesped modificado exitosamente");
+			
+		}, () -> JOptionPane.showMessageDialog(this, "Elija un huesped para editar"));
+	}
+	
 //Código que permite mover la ventana por la pantalla según la posición de "x" y "y"
 	 private void headerMousePressed(java.awt.event.MouseEvent evt) {
 	        xMouse = evt.getX();

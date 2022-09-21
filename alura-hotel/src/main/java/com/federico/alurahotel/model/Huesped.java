@@ -9,7 +9,7 @@ public class Huesped {
 	private String apellido;
 	private Date fechaNacimiento;
 	private String nacionalidad;
-	private String telefono;  //check tipo de dato en la db
+	private String telefono;  
 	private int idReservas;
 	
 	public Huesped() {
@@ -65,8 +65,8 @@ public class Huesped {
 		return idReservas;
 	}
 	
-//	public void setId(int id) {
-//		this.id = id;
-//	}
+	public void setId(int id) {
+		this.id = id;
+	}
 	
 }
