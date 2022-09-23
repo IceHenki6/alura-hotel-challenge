@@ -327,10 +327,11 @@ public class ReservasView extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				if (ReservasView.txtFechaE.getDate() != null && ReservasView.txtFechaS.getDate() != null) {
 					ReservasController reservasController = new ReservasController();
+
+					reserva.setFormaDePago((String) ReservasView.txtFormaPago.getSelectedItem());
+					reservasController.registerReservation(reserva);
 					int reservaId = reservasController.obtainId();
 					reserva.setReservationId(reservaId);
-					reserva.setFormaDePago((String) ReservasView.txtFormaPago.getSelectedItem());
-
 					RegistroHuesped registro = new RegistroHuesped(reserva);
 					
 					registro.setVisible(true);

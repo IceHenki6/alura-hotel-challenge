@@ -41,7 +41,9 @@ import java.time.Period;
 
 @SuppressWarnings("serial")
 public class Busqueda extends JFrame {
-
+	
+	private BusquedaController busquedaController;
+	
 	private JPanel contentPane;
 	private JTextField txtBuscar;
 	private JTable tbHuespedes;
@@ -72,6 +74,8 @@ public class Busqueda extends JFrame {
 	 * Create the frame.
 	 */
 	public Busqueda() {
+		this.busquedaController = new BusquedaController();
+		
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Busqueda.class.getResource("/com/federico/imagenes/lupa2.png")));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 910, 571);
@@ -116,6 +120,7 @@ public class Busqueda extends JFrame {
 		modelo.addColumn("Valor");
 		modelo.addColumn("Forma de Pago");
 		
+
 		
 		tbHuespedes = new JTable();
 		tbHuespedes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -129,7 +134,6 @@ public class Busqueda extends JFrame {
 		modeloH.addColumn("Nacionalidad");
 		modeloH.addColumn("Telefono");
 		modeloH.addColumn("Numero de Reserva");
-		
 		
 
 		
@@ -231,14 +235,15 @@ public class Busqueda extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				clearTable();
-				Pattern pattern = Pattern.compile("^[0-9]*$");
-				Matcher matcher = pattern.matcher(txtBuscar.getText());
-				boolean matchFound = matcher.find();
-				
-				if(matchFound) {
-					listReservas();
-				}else {
-					listHuespedes();
+				if(!txtBuscar.getText().isEmpty()) {
+					Pattern pattern = Pattern.compile("^[0-9]*$");
+					Matcher matcher = pattern.matcher(txtBuscar.getText());
+					boolean matchFound = matcher.find();
+					if(matchFound) {
+						listSearchedReservas(txtBuscar.getText());
+					}else {
+						listSearchedHuespedes();
+					}
 				}
 			}
 		});
@@ -288,6 +293,19 @@ public class Busqueda extends JFrame {
 		btnEliminar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 		contentPane.add(btnEliminar);
 		
+		
+		btnEliminar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(hasReservaElegida()) {
+					eliminarReserva();
+				}else {
+					eliminarHuesped();
+				}
+			}
+		});
+		
+		
 		JLabel lblEliminar = new JLabel("ELIMINAR");
 		lblEliminar.setHorizontalAlignment(SwingConstants.CENTER);
 		lblEliminar.setForeground(Color.WHITE);
@@ -304,9 +322,41 @@ public class Busqueda extends JFrame {
 		modeloH.getDataVector().clear();
 	}
 	
-	private void listHuespedes() {
-		BusquedaController busquedaController = new BusquedaController();
-		List<Huesped> huespedes = busquedaController.searchByLastName(txtBuscar.getText());
+	
+	private void listReservations() {
+		List<Reserva> reservas = this.busquedaController.listReservations();
+		
+		reservas.forEach(reserva -> modelo.addRow(
+					new Object[] {
+							reserva.getReservationId(),
+							reserva.getFechaEntrada(),
+							reserva.getFechaSalida(),
+							reserva.getReservationValue(),
+							reserva.getFormaDePago()
+					}
+				));
+	}
+	
+	
+	private void listGuests() {
+		List<Huesped> guests = this.busquedaController.listGuests();
+		
+		guests.forEach(guest -> modeloH.addRow(
+					new Object[] {
+							guest.getId(),
+							guest.getNombre(),
+							guest.getApellido(),
+							guest.getFechaNacimiento(),
+							guest.getNacionalidad(),
+							guest.getTelefono(),
+							guest.getIdReservas()
+					}
+				));
+	}
+	
+	
+	private void listSearchedHuespedes() {
+		List<Huesped> huespedes = this.busquedaController.searchByLastName(txtBuscar.getText());
 		
 		huespedes.forEach(huesped -> modeloH.addRow(
 				new Object[] {
@@ -320,6 +370,9 @@ public class Busqueda extends JFrame {
 				}
 				
 			));
+		
+		huespedes.forEach(huesped -> listSearchedReservas(String.valueOf(huesped.getIdReservas())));
+		
 	}
 	
 	private void listUniqueHuesped(Huesped huesped) {
@@ -330,10 +383,10 @@ public class Busqueda extends JFrame {
 		}
 	}
 	
-	private void listReservas() {
-		BusquedaController busquedaController = new BusquedaController(); 
-		Reserva reserva = busquedaController.searchByIdReservation(txtBuscar.getText());
-		Huesped huesped = busquedaController.searchByHuespedResId(reserva.getReservationId());
+	private void listSearchedReservas(String idStr) {
+		Reserva reserva = this.busquedaController.searchByIdReservation(idStr);
+		Huesped huesped = this.busquedaController.searchByHuespedResId(reserva.getReservationId());
+		
 		if(reserva.getReservationId()!= 0) {
 			modelo.addRow(
 					new Object[] {
@@ -345,7 +398,10 @@ public class Busqueda extends JFrame {
 					}
 				);
 		}
-		listUniqueHuesped(huesped);
+		if(modeloH.getRowCount()<1) {
+			listUniqueHuesped(huesped);
+		}
+		
 	}
 	
 	
@@ -380,10 +436,11 @@ public class Busqueda extends JFrame {
 				reserva.setReservationId(id);
 				reserva.setFormaDePago(formaDePago);
 				
-				BusquedaController busquedaController = new BusquedaController();
-				busquedaController.EditReservations(reserva);
+				this.busquedaController.EditReservations(reserva);
+				
 				
 				JOptionPane.showMessageDialog(this, "Reserva modificada exitosamente");
+				clearTable();
 
 			},() -> JOptionPane.showMessageDialog(this, "Elija una reserva para editar"));
 	}
@@ -408,13 +465,54 @@ public class Busqueda extends JFrame {
 			
 			Huesped huesped = new Huesped(nombre, apellido, fechaNacimiento, nacionalidad, telefono, idReserva);
 			huesped.setId(id);
-			BusquedaController busquedaController = new BusquedaController();
 			
-			busquedaController.EditGuest(huesped);
+			this.busquedaController.EditGuest(huesped);
+			
 			
 			JOptionPane.showMessageDialog(this, "Huesped modificado exitosamente");
 			
 		}, () -> JOptionPane.showMessageDialog(this, "Elija un huesped para editar"));
+	}
+	
+	
+	private void eliminarHuesped() {
+		if(!hasHuespedElegido()) {
+			JOptionPane.showMessageDialog(this, "Elija un huesped");
+			return;
+		}
+		
+		Optional.ofNullable(modeloH.getValueAt(tbHuespedes.getSelectedRow(), tbHuespedes.getSelectedColumn()))
+		.ifPresentOrElse(fila -> {
+			Integer id = Integer.valueOf(modeloH.getValueAt(tbHuespedes.getSelectedRow(), 0).toString());
+			
+			System.out.println(id);
+			this.busquedaController.deleteGuest(id);
+			
+			modeloH.removeRow(tbHuespedes.getSelectedRow());
+			JOptionPane.showMessageDialog(this, "Se ha eliminado al huesped exitosamente");
+			clearTable();
+
+		}, () -> JOptionPane.showMessageDialog(this, "Por favor, elija un huesped"));
+	}
+	
+	private void eliminarReserva() {
+		if(!hasReservaElegida()) {
+			JOptionPane.showMessageDialog(this, "Elija una reserva");
+			return;
+		}
+		
+		Optional.ofNullable(modelo.getValueAt(tbReservas.getSelectedRow(), tbReservas.getSelectedColumn()))
+		.ifPresentOrElse(fila -> {
+			Integer id = Integer.valueOf(modelo.getValueAt(tbReservas.getSelectedRow(), 0).toString());
+			
+			System.out.println(id);
+			this.busquedaController.deleteReservation(id);
+			
+			modelo.removeRow(tbReservas.getSelectedRow());
+			JOptionPane.showMessageDialog(this, "Se ha eliminado la reserva exitosamente");
+			clearTable();
+
+		}, () -> JOptionPane.showMessageDialog(this, "Por favor, elija una reserva"));
 	}
 	
 //Código que permite mover la ventana por la pantalla según la posición de "x" y "y"

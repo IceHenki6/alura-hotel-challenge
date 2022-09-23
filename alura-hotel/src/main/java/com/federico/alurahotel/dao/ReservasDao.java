@@ -51,7 +51,7 @@ public class ReservasDao {
 		}catch(SQLException e) {
 			throw new RuntimeException(e);
 		}
-		return reservationId + 1;
+		return reservationId;
 	}
 	
 }

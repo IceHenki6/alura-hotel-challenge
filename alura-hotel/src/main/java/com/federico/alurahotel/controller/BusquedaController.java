@@ -22,6 +22,14 @@ public class BusquedaController {
 		
 	}
 	
+	public List<Reserva> listReservations(){
+		return busquedaDao.listReservations();
+	}
+	
+	public List<Huesped> listGuests(){
+		return busquedaDao.listGuests();
+	}
+	
 	public List<Huesped> searchByLastName(String lastName){
 		return busquedaDao.searchByLastName(lastName);
 	}
@@ -36,5 +44,13 @@ public class BusquedaController {
 	
 	public void EditGuest(Huesped huesped) {
 		busquedaDao.editGuest(huesped);
+	}
+	
+	public void deleteGuest(int id) {
+		busquedaDao.deleteGuest(id);
+	}
+	
+	public void deleteReservation(int id) {
+		busquedaDao.deleteReservation(id);
 	}
 }

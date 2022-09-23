@@ -18,6 +18,66 @@ public class BusquedaDao {
 		this.con = con;
 	}
 	
+	
+	
+	public List<Reserva> listReservations(){
+		List<Reserva> result = new ArrayList<>();
+		try {
+			String sql = "SELECT id, fecha_entrada, fecha_salida, valor, forma_de_pago FROM reservas ORDER BY id";
+			final PreparedStatement statement = con.prepareStatement(sql);
+			try(statement){
+				final ResultSet resultSet = statement.executeQuery();
+				try(resultSet){
+					while(resultSet.next()) {
+						Reserva reserva = new Reserva(
+									resultSet.getDate("fecha_entrada"),
+									resultSet.getDate("fecha_salida"),
+									resultSet.getDouble("valor")
+								);
+						reserva.setReservationId(resultSet.getInt("id"));
+						reserva.setFormaDePago(resultSet.getString("forma_de_pago"));
+						result.add(reserva);
+					}
+				}
+			}
+		}catch(SQLException e) {
+			throw new RuntimeException(e);
+		}
+		return result;
+	}
+	
+	
+	public List<Huesped> listGuests(){
+		List<Huesped> result = new ArrayList<>();
+		
+		try {
+			String sql = "SELECT id, nombre, apellido, fecha_de_nacimiento, nacionalidad, telefono, id_reservas "
+					+ "FROM huespedes ORDER BY id";
+			final PreparedStatement statement = con.prepareStatement(sql);
+			
+			try(statement){
+				final ResultSet resultSet = statement.executeQuery();
+				try(resultSet){
+					while(resultSet.next()) {
+						Huesped guest = new Huesped(
+									resultSet.getInt("id"),
+									resultSet.getString("nombre"),
+									resultSet.getString("apellido"),
+									resultSet.getDate("fecha_de_nacimiento"),
+									resultSet.getString("nacionalidad"),
+									resultSet.getString("telefono"),
+									resultSet.getInt("id_reservas")
+								);
+						result.add(guest);
+					}
+				}
+			}
+		}catch(SQLException e) {
+			throw new RuntimeException(e);
+		}
+		return result;
+	}
+	
 	public Reserva searchByReservationId(int id) {
 		Reserva reserva = new Reserva();
 		try {
@@ -156,6 +216,34 @@ public class BusquedaDao {
 				statement.setString(5, guest.getTelefono());
 				statement.setInt(6, guest.getId());
 				
+				statement.execute();
+			}
+		}catch(SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
+	public void deleteGuest(int id) {
+		try {
+			String sql = "DELETE FROM huespedes WHERE id = ?";
+			final PreparedStatement statement = con.prepareStatement(sql);
+			
+			try(statement){
+				statement.setInt(1, id);
+				statement.execute();
+			}
+		}catch(SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public void deleteReservation (int id) {
+		try {
+			String sql = "DELETE FROM reservas WHERE id = ?";
+			final PreparedStatement statement = con.prepareStatement(sql);
+			try(statement){
+				statement.setInt(1, id);
 				statement.execute();
 			}
 		}catch(SQLException e) {

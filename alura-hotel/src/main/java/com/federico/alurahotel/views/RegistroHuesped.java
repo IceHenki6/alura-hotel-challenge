@@ -287,7 +287,7 @@ public class RegistroHuesped extends JFrame {
 					
 					
 					try {
-						reservasController.registerReservation(reserva);
+						
 				
 						RegistroHuespedController registroHuespedController = new RegistroHuespedController();
 						registroHuespedController.registrarHuesped(huesped);
