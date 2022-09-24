@@ -151,26 +151,7 @@ public class ReservasView extends JFrame {
 		txtFechaS.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 //Activa el evento, después del usuario seleccionar las fechas se debe calcular el valor de la reserva
-				
-
-				if (ReservasView.txtFechaE.getDate() != null && ReservasView.txtFechaS.getDate() != null) {
-					Period difference = Period.between
-							(ReservasView.txtFechaE.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), 
-									ReservasView.txtFechaS.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-					
-					
-					double result = ReservasController.obtainReservationValue(difference.getDays());
-					if(result >= 0) {
-						LocalDate fechaEntrada = ReservasView.txtFechaE.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-						LocalDate fechaSalida = ReservasView.txtFechaS.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-						reserva = new Reserva(fechaEntrada,fechaSalida,result);
-						ReservasView.txtValor.setText(String.valueOf(result));
-					}else {
-						JOptionPane.showMessageDialog(null, "Fecha inválida, ingresa una fecha de salida apropiada.");
-						ReservasView.txtFechaS.setDate(null);
-					}
-					
-				}
+				calcularFechaYValor();
 			}
 		});
 		txtFechaS.setDateFormatString("yyyy-MM-dd");
@@ -325,20 +306,7 @@ public class ReservasView extends JFrame {
 		btnsiguiente.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (ReservasView.txtFechaE.getDate() != null && ReservasView.txtFechaS.getDate() != null) {
-					ReservasController reservasController = new ReservasController();
-
-					reserva.setFormaDePago((String) ReservasView.txtFormaPago.getSelectedItem());
-					reservasController.registerReservation(reserva);
-					int reservaId = reservasController.obtainId();
-					reserva.setReservationId(reservaId);
-					RegistroHuesped registro = new RegistroHuesped(reserva);
-					
-					registro.setVisible(true);
-					dispose();
-				} else {
-					JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
-				}
+				generarReserva();
 			}						
 		});
 		btnsiguiente.setLayout(null);
@@ -353,6 +321,52 @@ public class ReservasView extends JFrame {
 		lblSiguiente.setFont(new Font("Roboto", Font.PLAIN, 18));
 		lblSiguiente.setBounds(0, 0, 122, 35);
 		btnsiguiente.add(lblSiguiente);
+	}
+	
+	//TODO rename this method
+	private void calcularFechaYValor(){
+		if (ReservasView.txtFechaE.getDate() != null && ReservasView.txtFechaS.getDate() != null) {
+			Period difference = Period.between
+					(ReservasView.txtFechaE.getDate()
+							.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), 
+							ReservasView.txtFechaS.getDate()
+							.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+			
+			
+			double result = ReservasController.obtainReservationValue(difference.getDays());
+			
+			if(result >= 0) {
+				LocalDate fechaEntrada = ReservasView.txtFechaE.getDate()
+						.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				LocalDate fechaSalida = ReservasView.txtFechaS.getDate()
+						.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				
+				reserva = new Reserva(fechaEntrada,fechaSalida,result);
+				ReservasView.txtValor.setText(String.valueOf(result));
+			}else {
+				JOptionPane.showMessageDialog(null, "Fecha inválida, ingresa una fecha de salida apropiada.");
+				ReservasView.txtFechaS.setDate(null);
+			}		
+		}
+	}
+	
+	private void generarReserva() {
+		if (ReservasView.txtFechaE.getDate() != null && ReservasView.txtFechaS.getDate() != null) {
+			ReservasController reservasController = new ReservasController();
+
+			reserva.setFormaDePago((String) ReservasView.txtFormaPago.getSelectedItem());
+			reservasController.registerReservation(reserva);
+			int reservaId = reservasController.obtainId();
+			reserva.setReservationId(reservaId);
+			
+			//opens RegistroHuesped view after a reservation is registered
+			RegistroHuesped registro = new RegistroHuesped(reserva);
+			
+			registro.setVisible(true);
+			dispose();
+		} else {
+			JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
+		}
 	}
 
 	//Código que permite mover la ventana por la pantalla según la posición de "x" y "y"	

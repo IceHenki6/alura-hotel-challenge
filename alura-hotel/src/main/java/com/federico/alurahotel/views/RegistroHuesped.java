@@ -271,38 +271,7 @@ public class RegistroHuesped extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				//here
-				if(txtNombre.getText()!= null && txtApellido.getText() != null 
-						&& txtNacionalidad.getSelectedItem()!=null && txtFechaN.getDate() != null) {
-					
-					
-					LocalDate birthDate = txtFechaN.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-					String nombre = txtNombre.getText();
-					String apellido = txtApellido.getText();
-					String nacionalidad = String.valueOf(txtNacionalidad.getSelectedItem());
-					String telefono = txtTelefono.getText();
-					int idReserva = reserva.getReservationId();
-					
-					Huesped huesped = new Huesped(nombre,apellido,birthDate,nacionalidad,telefono,idReserva);
-					
-					
-					
-					try {
-						
-				
-						RegistroHuespedController registroHuespedController = new RegistroHuespedController();
-						registroHuespedController.registrarHuesped(huesped);
-						
-						Exito exito = new Exito();
-						exito.setVisible(true);
-						dispose();
-					}catch(Exception ex) {
-						ex.printStackTrace();
-					}
-					
-				}else {
-					JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
-				}
-				
+				registrarHuesped();
 			}
 		});
 		btnguardar.setLayout(null);
@@ -365,6 +334,36 @@ public class RegistroHuesped extends JFrame {
 		labelExit.setFont(new Font("Roboto", Font.PLAIN, 18));
 	}
 	
+	private void registrarHuesped() {
+		if(txtNombre.getText()!= null && txtApellido.getText() != null 
+				&& txtNacionalidad.getSelectedItem()!=null && txtFechaN.getDate() != null) {
+			
+			
+			LocalDate birthDate = txtFechaN.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			String nombre = txtNombre.getText();
+			String apellido = txtApellido.getText();
+			String nacionalidad = String.valueOf(txtNacionalidad.getSelectedItem());
+			String telefono = txtTelefono.getText();
+			int idReserva = reserva.getReservationId();
+			
+			Huesped huesped = new Huesped(nombre,apellido,birthDate,nacionalidad,telefono,idReserva);
+													
+			try {
+				
+				RegistroHuespedController registroHuespedController = new RegistroHuespedController();
+				registroHuespedController.registrarHuesped(huesped);
+				
+				Exito exito = new Exito();
+				exito.setVisible(true);
+				dispose();
+			}catch(Exception ex) {
+				ex.printStackTrace();
+			}
+			
+		}else {
+			JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
+		}
+	}
 	
 	//Código que permite mover la ventana por la pantalla según la posición de "x" y "y"	
 	 private void headerMousePressed(java.awt.event.MouseEvent evt) {
