@@ -38,6 +38,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.temporal.ChronoUnit;
 
 @SuppressWarnings("serial")
 public class Busqueda extends JFrame {
@@ -432,8 +433,8 @@ public class Busqueda extends JFrame {
 				String formaDePago = modelo.getValueAt(tbReservas.getSelectedRow(), 4).toString();
 				//TODO make this a bit less horrendous
 							
-				Period diff = Period.between(fechaEntrada, fechaSalida);
-				Double valorReserva = ReservasController.obtainReservationValue(diff.getDays());
+				int diff = (int) ChronoUnit.DAYS.between(fechaEntrada, fechaSalida);
+				Double valorReserva = ReservasController.obtainReservationValue(diff);
 				Reserva reserva = new Reserva(fechaEntrada, fechaSalida, valorReserva);
 				reserva.setReservationId(id);
 				reserva.setFormaDePago(formaDePago);

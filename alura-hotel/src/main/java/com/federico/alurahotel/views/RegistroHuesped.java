@@ -7,6 +7,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import java.awt.Color;
 
+import com.federico.alurahotel.controller.BusquedaController;
 import com.federico.alurahotel.controller.RegistroHuespedController;
 import com.federico.alurahotel.controller.ReservasController;
 import com.federico.alurahotel.model.Huesped;
@@ -36,7 +37,9 @@ import javax.swing.JSeparator;
 @SuppressWarnings("serial")
 public class RegistroHuesped extends JFrame {
 	private Reserva reserva;
+
 	private ReservasController reservasController;
+	private BusquedaController busquedaController;
 	
 	private JPanel contentPane;
 	private JTextField txtNombre;
@@ -72,6 +75,11 @@ public class RegistroHuesped extends JFrame {
 		
 		this.reserva = reserva;
 		this.reservasController = new ReservasController();
+		
+		/*Se utiliza busquedaController para poder eliminar una reserva en caso de que se cancele el registro 
+		 * de un huesped
+		*/
+		this.busquedaController = new BusquedaController();
 		
 		setIconImage(Toolkit.getDefaultToolkit().getImage(RegistroHuesped.class.getResource("/com/federico/imagenes/lOGO-50PX.png")));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -109,6 +117,10 @@ public class RegistroHuesped extends JFrame {
 		btnAtras.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				//elimina la última reserva creada
+				int resId = reservasController.obtainId();
+				busquedaController.deleteReservation(resId);
+				
 				ReservasView reservas = new ReservasView();
 				reservas.setVisible(true);
 				dispose();				
@@ -270,7 +282,6 @@ public class RegistroHuesped extends JFrame {
 		btnguardar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				//here
 				registrarHuesped();
 			}
 		});
@@ -308,6 +319,10 @@ public class RegistroHuesped extends JFrame {
 		btnexit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				//elimina la última reserva creada
+				int resId = reservasController.obtainId();
+				busquedaController.deleteReservation(resId);
+				
 				MenuPrincipal principal = new MenuPrincipal();
 				principal.setVisible(true);
 				dispose();
@@ -336,7 +351,8 @@ public class RegistroHuesped extends JFrame {
 	
 	private void registrarHuesped() {
 		if(txtNombre.getText()!= null && txtApellido.getText() != null 
-				&& txtNacionalidad.getSelectedItem()!=null && txtFechaN.getDate() != null) {
+				&& txtNacionalidad.getSelectedItem()!=null && txtFechaN.getDate() != null
+				&& txtNombre.getText().length() <= 50 && txtApellido.getText().length() <= 100) {
 			
 			
 			LocalDate birthDate = txtFechaN.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -359,6 +375,10 @@ public class RegistroHuesped extends JFrame {
 			}catch(Exception ex) {
 				ex.printStackTrace();
 			}
+			
+		}else if(txtNombre.getText().length() > 50 || txtApellido.getText().length() > 100) {
+			JOptionPane.showMessageDialog(null, 
+					"El nombre o el apellido superan el número de caracteres permitido");		
 			
 		}else {
 			JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
